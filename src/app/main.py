@@ -1,20 +1,104 @@
+import time
 from fastapi import FastAPI, HTTPException
 from mangum import Mangum
 
 from .environments import Environments
 
 from .repo.item_repository_mock import ItemRepositoryMock
+from .repo.user_repository_mock import UserRepositoryMock
+from .repo.transaction_repository_mock import TransactionRepositoryMock
 
 from .errors.entity_errors import ParamNotValidated
 
 from .enums.item_type_enum import ItemTypeEnum
 
 from .entities.item import Item
-
+from .entities.user import User
+from .entities.transaction import Transaction
 
 app = FastAPI()
 
 repo = Environments.get_item_repo()()
+user_repo = Environments.get_user_repo()()
+transaction_repo = Environments.get_transaction_repo()()
+
+@app.get("/get_user")
+def get_user():
+    user = user_repo.get_user()
+    return {
+        "name": user.name,
+        "agency": user.agency,
+        "account": user.account,
+        "current_balance": user.current_balance
+    }
+
+@app.post("/create_deposit", status_code=201)
+def create_deposit(request: dict):
+    values = 0
+    user_repo = UserRepositoryMock()
+
+    for key, value in request.items():
+        value = int(key)*value
+        values += value
+    
+    float_values = float(values)
+
+    validation_value = Transaction.validate_value(value=float_values, current_balance=user_repo.users[0].current_balance)
+    
+    if not validation_value[0]:
+        raise HTTPException(status_code=403, detail=validation_value[1])
+
+    value=float_values,
+    current_balance= (user_repo.users[0].current_balance + float_values),
+    timestamp= time.time(),
+
+    deposit_response = transaction_repo.create_deposit(value, current_balance, timestamp)
+    print(deposit_response)
+    return {
+        "current_balance": current_balance,
+        "timestamp": timestamp    
+    }
+
+@app.post("/create_withdraw", status_code=201)
+def create_withdraw(request: dict):
+    values = 0
+    user_repo = UserRepositoryMock()
+
+    for key, value in request.items():
+        value = int(key)*value
+        values += value
+    
+    float_values = float(values)
+
+    validation_value = Transaction.validate_value(value=float_values, current_balance=user_repo.users[0].current_balance)
+    
+    if not validation_value[0]:
+        raise HTTPException(status_code=403, detail=validation_value[1])
+
+    value=float_values,
+    current_balance= (user_repo.users[0].current_balance - float_values),
+    timestamp= time.time(),
+
+    deposit_response = transaction_repo.create_deposit(value, current_balance, timestamp)
+    print(deposit_response)
+    return {
+        "current_balance": current_balance,
+        "timestamp": timestamp    
+    }
+
+@app.get("/get_history")
+def get_history():
+    transactions = transaction_repo.get_history()
+    return {
+        "all_transactions": [transaction.to_dict() for transaction in transactions]
+    }
+
+@app.get("/items/get_all_items")    
+def get_all_items():
+    items = repo.get_all_items()
+    return {
+        "items": [item.to_dict() for item in items]
+    }
 
 @app.get("/items/get_all_items")
 def get_all_items():

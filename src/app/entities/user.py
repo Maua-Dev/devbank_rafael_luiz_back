@@ -29,8 +29,8 @@ class User:
             raise ParamNotValidated("current_balance", validation_current_balance[1])
         self.current_balance = current_balance
 
-        @staticmethod
-        def validate_name(name: str) -> Tuple[bool, str]:
+    @staticmethod
+    def validate_name(name: str) -> Tuple[bool, str]:
             if name is None:
                 return (False, "Name is required")
             if type(name) != str:
@@ -39,8 +39,8 @@ class User:
                 return (False, "Name must be at least 3 characters long")
             return (True, "")
 
-        @staticmethod
-        def validate_agency(agency: str) -> Tuple[bool, str]:
+    @staticmethod
+    def validate_agency(agency: str) -> Tuple[bool, str]:
             if agency is None:
                 return (False, "Agency is required")
             if type(agency) != str:
@@ -49,8 +49,8 @@ class User:
                 return (False, "Agency must be 4 characters long")
             return (True, "")
         
-        @staticmethod
-        def validate_account(account: str) -> Tuple[bool, str]:
+    @staticmethod
+    def validate_account(account: str) -> Tuple[bool, str]:
             if account is None:
                 return (False, "Account is required")
             if type(account) != str:
@@ -61,8 +61,8 @@ class User:
                 return (False, "Account must be formatted like XXXXX-X")
             return (True, "")
         
-        @staticmethod
-        def validate_balance(balance: float) -> Tuple[bool, float]:
+    @staticmethod
+    def validate_current_balance(balance: float) -> Tuple[bool, float]:
             if balance is None:
                 return (False, "Balance is required")
             if type(balance) != float:
@@ -71,7 +71,7 @@ class User:
                 return (False, "Balance must be a positive value")
             return (True, "")
         
-        def to_dict(self):
+    def to_dict(self):
             return {
                 "name": self.name,
                 "agency": self.agency,

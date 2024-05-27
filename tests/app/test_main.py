@@ -1,11 +1,62 @@
+import time
 from fastapi.exceptions import HTTPException
 import pytest
 from src.app.entities.item import Item
 from src.app.enums.item_type_enum import ItemTypeEnum
-from src.app.main import get_all_items, get_item, create_item, delete_item, update_item
+from src.app.main import create_deposit, create_withdraw, get_all_items, get_history, get_item, create_item, delete_item, get_user, update_item
 from src.app.repo.item_repository_mock import ItemRepositoryMock
+from src.app.repo.transaction_repository_mock import TransactionRepositoryMock
+from src.app.repo.user_repository_mock import UserRepositoryMock
 
 class Test_Main:
+    def test_get_user(self):
+        repo = UserRepositoryMock()
+        response = get_user()
+        assert response == {
+            "name": "Vitor Soller", 
+            "agency":"0000", 
+            "account":"00000-0", 
+            "current_balance":1000
+        }
+
+    def test_create_deposit(self):
+        repo = UserRepositoryMock()
+
+        body = {
+            "2": 1,
+            "5": 2,
+            "10": 0,
+            "20": 0,
+            "50": 0 ,
+            "100": 0,
+            "200": 0
+        }
+        response = create_deposit(request=body)
+        print(response)
+        assert response["current_balance"][0] == 1012
+
+    def test_create_withdraw(self):
+            repo = UserRepositoryMock()
+
+            body = {
+                "2": 1,
+                "5": 2,
+                "10": 0,
+                "20": 0,
+                "50": 0 ,
+                "100": 0,
+                "200": 0
+            }
+            response = create_withdraw(request=body)
+            print(response)
+            assert response["current_balance"][0] == 988
+
+    def test_get_history(self):
+        repo = TransactionRepositoryMock()
+        response = get_history()
+        print(response)
+        assert response == {'all_transactions': [{'method': 'deposit', 'value': 100.0, 'current_balance': 1000.0, 'timestamp': 1690482853890.0}, {'method': 'withdraw', 'value': 300.0, 'current_balance': 700.0, 'timestamp': 1691707985704.6152}, {'method': 'deposit', 'value': 10.0, 'current_balance': 710.0, 'timestamp': 1691707990727.101}, {'method': 'withdraw', 'value': 30.0, 'current_balance': 680.0, 'timestamp': 1691707994750.5022}]}
+
     def test_get_all_items(self):
         repo = ItemRepositoryMock()
         response = get_all_items()
